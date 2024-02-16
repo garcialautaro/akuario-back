@@ -11,10 +11,7 @@ profile_bp = Blueprint('profile_bp', __name__)
 # @access_required('manage_profiles')
 def create_profile():
     data = request.json
-    new_profile = ProfileModel(
-        name=data['name'].lower(),
-        description=data.get('description', '')
-    )
+    new_profile = ProfileModel.from_json(data)  # Asumiendo la existencia de from_json
     db.session.add(new_profile)
     db.session.commit()
     return jsonify({'message': 'Profile created successfully', 'uuid': new_profile.uuid}), 201
@@ -23,24 +20,24 @@ def create_profile():
 # @token_required
 # @access_required('view_profiles')
 def get_all_profiles():
-    profiles = ProfileModel.query.all()
-    profiles_data = [{'uuid': profile.uuid, 'name': profile.name, 'description': profile.description} for profile in profiles]
+    profiles = ProfileModel.query.filter(ProfileModel.deleted_at == None).all()
+    profiles_data = [profile.to_json() for profile in profiles]  # Usando to_json
     return jsonify(profiles_data), 200
 
 @profile_bp.route('/profiles/<uuid>', methods=['GET'])
 # @token_required
 # @access_required('view_profiles')
 def get_profile(uuid):
-    profile = ProfileModel.query.filter_by(uuid=uuid).first()
+    profile = ProfileModel.query.filter_by(uuid=uuid, deleted_at=None).first()
     if profile:
-        return jsonify({'uuid': profile.uuid, 'name': profile.name, 'description': profile.description}), 200
+        return jsonify(profile.to_json()), 200  # Usando to_json
     return jsonify({'message': 'Profile not found'}), 404
 
 @profile_bp.route('/profiles/<uuid>', methods=['PUT'])
 # @token_required
 # @access_required('manage_profiles')
 def update_profile(uuid):
-    profile = ProfileModel.query.filter_by(uuid=uuid).first()
+    profile = ProfileModel.query.filter_by(uuid=uuid, deleted_at=None).first()
     if profile:
         data = request.json
         profile.name = data.get('name', profile.name).lower()
@@ -53,7 +50,7 @@ def update_profile(uuid):
 # @token_required
 # @access_required('manage_profiles')
 def delete_profile(uuid):
-    profile = ProfileModel.query.filter_by(uuid=uuid).first()
+    profile = ProfileModel.query.filter_by(uuid=uuid, deleted_at=None).first()
     if profile:
         profile.deleted_at = datetime.utcnow()
         db.session.commit()
@@ -65,21 +62,14 @@ def delete_profile(uuid):
 # @access_required('assign_accesses')
 def set_accesses(uuid_profile):
     data = request.json
-    accesses_uuids = data.get('uuid_accesses', [])
-
-    # Verificar si el array de UUIDs de accesos está vacío
-    if not accesses_uuids:
-        return jsonify({'error': 'No access UUIDs provided. At least one access UUID is required.'}), 400
-
-    profile = ProfileModel.query.filter_by(uuid=uuid_profile).first()
+    profile = ProfileModel.query.filter_by(uuid=uuid_profile, deleted_at=None).first()
     if not profile:
         return jsonify({'message': 'Profile not found'}), 404
 
-    accesses = AccessModel.query.filter(AccessModel.uuid.in_(accesses_uuids)).all()
-    profile.accesses = []  # Limpiar accesos existentes
-
+    accesses_uuids = data.get('uuid_accesses', [])
+    accesses = AccessModel.query.filter(AccessModel.uuid.in_(accesses_uuids), AccessModel.deleted_at == None).all()
     if accesses:
-        profile.accesses.extend(accesses)
+        profile.accesses = accesses
         db.session.commit()
         return jsonify({'message': 'Accesses assigned successfully'}), 200
     else:
@@ -87,18 +77,10 @@ def set_accesses(uuid_profile):
 
 @profile_bp.route('/profiles/<uuid_profile>/accesses', methods=['GET'])
 # @token_required
-# @access_required('assign_accesses')
+# @access_required('view_accesses')
 def get_profile_accesses(uuid_profile):
-    profile = ProfileModel.query.filter_by(uuid=uuid_profile).first()
-    if not profile:
-        return jsonify({'message': 'Profile not found'}), 404
-
-    accesses = profile.accesses
-    accesses_data = [{
-        'uuid': access.uuid,
-        'name': access.name,
-        'description': access.description,
-        # Agrega otros campos del modelo AccessModel si es necesario
-    } for access in accesses]
-
-    return jsonify(accesses_data), 200
+    profile = ProfileModel.query.filter_by(uuid=uuid_profile, deleted_at=None).first()
+    if profile:
+        accesses_data = [access.to_json() for access in profile.accesses]
+        return jsonify(accesses_data), 200
+    return jsonify({'message': 'Profile not found'}), 404

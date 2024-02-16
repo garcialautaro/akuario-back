@@ -24,12 +24,7 @@ def create_user():
         user = UserModel(
             firebase_uid=firebase_user.uid,
             username=data['username'].lower(),
-            email=data['email'].lower(),
-            address=data.get('address', ''),
-            company_name=data.get('company_name', ''),
-            cuil=data.get('cuil', ''),
-            dni=data.get('dni', ''),
-            uuid=user_uuid
+            email=data['email'].lower()
         )
         db.session.add(user)
         db.session.commit()
@@ -57,22 +52,8 @@ def validate_token():
         if not user:
             return jsonify({'error': 'User not found'}), 404
 
-        # Prepara el objeto de usuario para la respuesta, excluyendo información sensible
-        user_data = {
-            'uuid': user.uuid,
-            'firebase_uid': user.firebase_uid,
-            'username': user.username,
-            'email': user.email,
-            # Incluye otros campos según sea necesario, pero omite campos sensibles como contraseñas o tokens
-            'address': user.address,
-            'company_name': user.company_name,
-            'cuil': user.cuil,
-            'dni': user.dni,
-            # Puedes incluir más campos aquí
-        }
-
         # Si el token es válido y el usuario existe, devuelve una respuesta positiva con el objeto de usuario
-        return jsonify({'message': 'Token is valid', 'user': user_data}), 200
+        return jsonify({'message': 'Token is valid', 'user': user.to_json()}), 200
     except auth.ExpiredIdTokenError:
         return jsonify({'error': 'Token has expired'}), 401
     except auth.RevokedIdTokenError:
