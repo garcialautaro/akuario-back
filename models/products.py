@@ -17,6 +17,7 @@ class ProductsModel(db.Model):
     name = db.Column(db.String(150), nullable=False)
     price = db.Column(db.Float, nullable=False)
     sales_number = db.Column(db.Integer, nullable=False, default=0)
+    code = db.Column(db.String(5), nullable=True)
     photo = db.Column(db.LargeBinary, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -37,6 +38,7 @@ class ProductsModel(db.Model):
             'name': self.name,
             'price': self.price,
             'sales_number': self.sales_number,
+            'code': self.code,
             'photo': photo_encoded,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
@@ -53,5 +55,6 @@ class ProductsModel(db.Model):
             name=json_dict['name'],
             price=json_dict.get('price'),
             sales_number=json_dict.get('sales_number'),
+            code=json_dict.get('code'), #! DEBE TENER ENTRE 4 y 5 CARACTERES
             photo=photo_decoded
         )

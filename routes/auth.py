@@ -1,7 +1,7 @@
 import uuid
 from flask import Blueprint, request, jsonify
 from firebase_admin import auth
-from models import UserModel
+from models import UserModel, EmployeeModel, ClientModel
 from config.db_config import db
 
 # Crea un Blueprint para los endpoints de autenticación
@@ -52,8 +52,29 @@ def validate_token():
         if not user:
             return jsonify({'error': 'User not found'}), 404
 
-        # Si el token es válido y el usuario existe, devuelve una respuesta positiva con el objeto de usuario
-        return jsonify({'message': 'Token is valid', 'user': user.to_json()}), 200
+        # Intenta encontrar un empleado asociado a este usuario
+        employee = EmployeeModel.query.filter_by(user_uuid=user.uuid).first()
+        # Intenta encontrar un cliente asociado a este usuario
+        client = ClientModel.query.filter_by(user_uuid=user.uuid).first()
+
+        # Prepara el objeto de respuesta del usuario
+        user_response = user.to_json()
+
+        # Agrega información adicional del empleado o cliente si existe
+        if employee:
+            return jsonify({
+                'message': 'Token is valid', 
+                'user': user_response,
+                'employee': employee.to_json()
+                }), 200
+            
+        elif client:
+            return jsonify({
+                'message': 'Token is valid', 
+                'user': user_response,
+                'client': client.to_json()
+                }), 200
+        
     except auth.ExpiredIdTokenError:
         return jsonify({'error': 'Token has expired'}), 401
     except auth.RevokedIdTokenError:

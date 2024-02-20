@@ -12,10 +12,52 @@ clients_bp = Blueprint('clients_bp', __name__)
 # @access_required('manage_clients')
 def create_client():
     data = request.json
-    new_client = ClientModel.from_json(data)
-    db.session.add(new_client)
-    db.session.commit()
-    return jsonify({'message': 'Client created successfully', 'uuid': new_client.uuid}), 201
+    firebase_user = None  # Inicializa la variable fuera del bloque try para poder acceder después
+    try:
+        firebase_user = firebase_auth.create_user(
+            email=data['email'],
+            password=data['password']
+        )
+        
+        user_data = {
+            'firebase_uid': firebase_user.uid,
+            'username': data['username'].lower(),
+            'email': data['email'].lower()
+        }
+        user = UserModel.from_json(user_data)
+        db.session.add(user)
+        db.session.flush()
+        
+        client_data = {
+            'user_uuid': user.uuid,
+            'first_name': data['first_name'],
+            'last_name': data['last_name'],
+            'dni': data.get('dni'),
+            'cuil': data.get('cuil'),
+            'company_name': data.get('company_name'),
+            'address': data.get('address'),
+            'phone': data.get('phone'),
+        }
+        new_client = ClientModel.from_json(client_data)
+        db.session.add(new_client)
+        
+        db.session.commit()
+        return jsonify(
+            {'message': 'Client created successfully', 
+             'user_uuid': user.uuid, 
+             'employee_uuid': new_client.uuid,
+             'firebase_uid': firebase_user.uid}), 201
+    except Exception as e:
+        db.session.rollback()
+        if firebase_user:
+            try:
+                # Intenta eliminar el usuario de Firebase si fue creado previamente
+                firebase_auth.delete_user(firebase_user.uid)
+            except Exception:
+                # Si falla la eliminación, no hacer nada o loggear el error según sea necesario
+                pass
+        return jsonify({'error': str(e)}), 400
+
 
 @clients_bp.route('/clients', methods=['GET'])
 # @token_required

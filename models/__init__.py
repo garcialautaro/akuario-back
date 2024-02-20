@@ -10,3 +10,4 @@ from .profiles import ProfileModel
 from .promotions import PromotionsModel
 from .reviews import ReviewsModel
 from .users import UserModel
+from .employees import EmployeeModel
