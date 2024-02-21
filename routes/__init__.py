@@ -7,6 +7,7 @@ from .brands import brands_bp
 from .clients import clients_bp
 from .employees import employees_bp
 from .order_statuses import order_statuses_bp
+from .orders import orders_bp
 
 
 def init_app(app: Flask):
