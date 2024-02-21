@@ -5,6 +5,8 @@ from .clients import ClientModel
 from .order_statuses import OrderStatusesModel
 from .orders import OrderModel
 from .payment_methods import PaymentMethodsModel
+from .photos import PhotosModel
+from .product_price_history import ProductPriceHistoryModel
 from .products import ProductsModel
 from .profiles import ProfileModel
 from .promotions import PromotionsModel

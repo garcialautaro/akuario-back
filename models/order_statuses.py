@@ -7,6 +7,8 @@ class OrderStatusesModel(db.Model):
     __tablename__ = 'order_statuses'
     uuid = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.String(150), unique=True, nullable=False)
+    code = db.Column(db.String(5), unique=True, nullable=False)
+    color = db.Column(db.String(15), unique=True, nullable=False)
     description = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -19,6 +21,8 @@ class OrderStatusesModel(db.Model):
         return {
             'uuid': self.uuid,
             'name': self.name,
+            'code': self.code,
+            'color': self.color,
             'description': self.description,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),

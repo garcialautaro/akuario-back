@@ -8,12 +8,14 @@ order_details = db.Table('order_details',
     db.Column('order_uuid', db.String(36), db.ForeignKey('orders.uuid'), primary_key=True),
     db.Column('product_uuid', db.String(36), db.ForeignKey('products.uuid'), primary_key=True),
     db.Column('price', db.Float, nullable=False),
-    db.Column('quantity', db.Integer, nullable=False)
+    db.Column('quantity', db.Integer, nullable=False),
+    db.Column('description', db.String(150)),
 )
 
 class OrderModel(db.Model):
     __tablename__ = 'orders'
     uuid = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    code = db.Column(db.Integer, autoincrement=True)
     client_uuid = db.Column(db.String(36), db.ForeignKey('clients.uuid'), nullable=False)
     status_uuid = db.Column(db.String(36), db.ForeignKey('order_statuses.uuid'), nullable=False)
     transaction_uuid = db.Column(db.String(36), nullable=True)
@@ -33,6 +35,7 @@ class OrderModel(db.Model):
             'uuid': self.uuid,
             'client_uuid': self.client_uuid,
             'status_uuid': self.status_uuid,
+            'code': self.code,
             'purchase_date': self.purchase_date.isoformat(),
             'total': self.total,
             'created_at': self.created_at.isoformat(),
