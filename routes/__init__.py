@@ -19,5 +19,6 @@ def init_app(app: Flask):
     app.register_blueprint(clients_bp, url_prefix='/api')
     app.register_blueprint(employees_bp, url_prefix='/api')
     app.register_blueprint(order_statuses_bp, url_prefix='/api')
+    app.register_blueprint(orders_bp, url_prefix='/api')
 
     # Registra otros blueprints aquí
