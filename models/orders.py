@@ -22,11 +22,12 @@ class OrderModel(db.Model):
     payment_method_uuid = db.Column(db.String(36), db.ForeignKey('payment_methods.uuid'), nullable=False)
     purchase_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     total = db.Column(db.Float, nullable=False)
-    details = db.relationship('ProductsModel', secondary='order_details', backref=db.backref('orders', lazy='dynamic'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     deleted_at = db.Column(db.DateTime, nullable=True)
 
+    details = db.relationship('ProductsModel', secondary='order_details', backref=db.backref('orders', lazy='dynamic'))
+    
     def __repr__(self):
         return '<Order %r>' % self.uuid
 

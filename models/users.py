@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 from config.db_config import db
 from sqlalchemy.orm import backref
+from flask import abort
 
 # Tabla intermedia perfiles_usuarios
 profiles_users = db.Table('profiles_users',
@@ -38,8 +39,22 @@ class UserModel(db.Model):
 
     @staticmethod
     def from_json(json_dict):
+        # Verificación de campos requeridos y no vacíos
+        required_fields = ['firebase_uid', 'username', 'email']
+        for field in required_fields:
+            if field not in json_dict or not json_dict[field].strip():
+                abort(400, description=f"The '{field}' field is required and cannot be empty or just spaces.")
+
+        # Verificar la unicidad de firebase_uid, username, y email
+        if UserModel.query.filter_by(firebase_uid=json_dict['firebase_uid']).first():
+            abort(400, description="The 'firebase_uid' is already in use.")
+        if UserModel.query.filter_by(username=json_dict['username']).first():
+            abort(400, description="The 'username' is already in use.")
+        if UserModel.query.filter_by(email=json_dict['email']).first():
+            abort(400, description="The 'email' is already in use.")
+
         return UserModel(
-            firebase_uid=json_dict['firebase_uid'],
-            username=json_dict['username'],
-            email=json_dict['email']
+            firebase_uid=json_dict['firebase_uid'].strip(),
+            username=json_dict['username'].strip(),
+            email=json_dict['email'].strip()
         )

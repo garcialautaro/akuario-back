@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 from config.db_config import db
 from flask import abort
+import base64
 
 class PhotosModel(db.Model):
     __tablename__ = 'photos'
@@ -16,9 +17,11 @@ class PhotosModel(db.Model):
         return '<Photo %r>' % self.uuid
 
     def to_json(self):
+        photo_encoded = base64.b64encode(self.blob).decode('utf-8') if self.blob else None
         return {
             'uuid': self.uuid,
             'uuid_product': self.uuid_product,
+            'blob': photo_encoded,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
             'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None
@@ -40,7 +43,9 @@ class PhotosModel(db.Model):
         if 'blob' not in json_dict or not json_dict['blob']:
             abort(400, description="The 'blob' field is required and cannot be empty.")
         
+        photo_decoded = base64.b64decode(json_dict['blob']) if 'blob' in json_dict and json_dict['blob'] else None
+        
         return PhotosModel(
             uuid_product=json_dict['uuid_product'],
-            blob=json_dict['blob']
+            blob=photo_decoded
         )

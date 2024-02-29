@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from config.db_config import db
+from flask import abort
 
 class PaymentMethodsModel(db.Model):
     __tablename__ = 'payment_methods'
@@ -26,7 +27,15 @@ class PaymentMethodsModel(db.Model):
 
     @staticmethod
     def from_json(json_dict):
+        # Verificar que el nombre esté presente y no sea solo espacios en blanco
+        if 'name' not in json_dict or not json_dict['name'].strip():
+            abort(400, description="The 'name' field is required and cannot be empty or just spaces.")
+
+        # Verificar que la descripción no sea una cadena vacía si se proporciona
+        if 'description' in json_dict and not json_dict['description'].strip():
+            abort(400, description="The 'description' field cannot be an empty string or just spaces if provided.")
+
         return PaymentMethodsModel(
-            name=json_dict['name'],
-            description=json_dict['description']
+            name=json_dict['name'].strip(),
+            description=json_dict.get('description', '').strip()
         )

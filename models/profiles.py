@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from config.db_config import db
+from flask import abort
 
 # Tabla intermedia perfiles_accesos
 profiles_accesses = db.Table('profiles_accesses',
@@ -36,7 +37,13 @@ class ProfileModel(db.Model):
     
     @staticmethod
     def from_json(json_dict):
+        if 'name' not in json_dict or not json_dict['name'].strip():
+            abort(400, description="The 'name' field is required and cannot be empty or just spaces.")
+
+        if 'description' in json_dict and not json_dict['description'].strip():
+            abort(400, description="The 'description' field cannot be an empty string or just spaces if provided.")
+
         return ProfileModel(
-            name=json_dict['name'],
-            description=json_dict.get('description')
+            name=json_dict['name'].strip(),
+            description=json_dict.get('description', '').strip()
         )

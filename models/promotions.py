@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from config.db_config import db
+from flask import abort
 
 # Definición de la tabla intermedia PromotionProducts
 promotion_products = db.Table('promotion_products',
@@ -35,15 +36,30 @@ class PromotionsModel(db.Model):
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
             'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None
-            # Considerar si incluir detalles de los productos promocionados aquí
         }
 
     @staticmethod
     def from_json(json_dict):
+        # Verificar que el campo 'name' esté presente y no sea solo espacios en blanco
+        if 'name' not in json_dict or not json_dict['name'].strip():
+            abort(400, description="The 'name' field is required and cannot be empty or just spaces.")
+
+        # Verificar que el campo 'description', si se proporciona, no sea solo espacios en blanco
+        if 'description' in json_dict and not json_dict['description'].strip():
+            abort(400, description="The 'description' field cannot be an empty string or just spaces if provided.")
+
+        # Verificar la validez de 'start_date' y 'end_date'
+        try:
+            start_date = datetime.fromisoformat(json_dict['start_date'])
+            end_date = datetime.fromisoformat(json_dict['end_date'])
+            if start_date >= end_date:
+                abort(400, description="The 'start_date' must be before the 'end_date'.")
+        except ValueError:
+            abort(400, description="Invalid date format. Please use ISO format for 'start_date' and 'end_date'.")
+
         return PromotionsModel(
-            name=json_dict['name'],
-            description=json_dict.get('description', ''),
-            start_date=datetime.fromisoformat(json_dict['start_date']),
-            end_date=datetime.fromisoformat(json_dict['end_date'])
-            # Asegúrate de manejar adecuadamente las fechas y los posibles errores de formato
+            name=json_dict['name'].strip(),
+            description=json_dict.get('description', '').strip(),
+            start_date=start_date,
+            end_date=end_date
         )

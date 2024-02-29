@@ -17,7 +17,6 @@ class ClientModel(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     deleted_at = db.Column(db.DateTime, nullable=True)
-    # Relaciones adicionales aquí según sea necesario
 
     def __repr__(self):
         return '<Client %r>' % self.uuid

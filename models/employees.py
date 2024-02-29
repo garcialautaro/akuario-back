@@ -9,8 +9,8 @@ class EmployeeModel(db.Model):
     user_uuid = db.Column(db.String(36), db.ForeignKey('users.uuid'), nullable=False, unique=True)
     first_name = db.Column(db.String(80), nullable=False)
     last_name = db.Column(db.String(80), nullable=False)
-    position = db.Column(db.String(80), nullable=True)  # Cargo o posición del empleado en la empresa
-    phone = db.Column(db.String(20), nullable=True)  # Teléfono de contacto laboral
+    position = db.Column(db.String(80), nullable=True)
+    phone = db.Column(db.String(20), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     deleted_at = db.Column(db.DateTime, nullable=True)
