@@ -3,14 +3,6 @@ from datetime import datetime
 from config.db_config import db
 from flask import abort
 
-# Definición de la tabla intermedia PromotionProducts
-promotion_products = db.Table('promotion_products',
-    db.Column('uuid', db.String(36), primary_key=True, default=lambda: str(uuid.uuid4())),
-    db.Column('promotion_uuid', db.String(36), db.ForeignKey('promotions.uuid'), nullable=False),
-    db.Column('product_uuid', db.String(36), db.ForeignKey('products.uuid'), nullable=False),
-    db.Column('discount_rate', db.Float, nullable=False)
-)
-
 class PromotionsModel(db.Model):
     __tablename__ = 'promotions'
     uuid = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -21,7 +13,6 @@ class PromotionsModel(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     deleted_at = db.Column(db.DateTime, nullable=True)
-    products = db.relationship('ProductsModel', secondary=promotion_products, backref=db.backref('promotions', lazy='dynamic'))
 
     def __repr__(self):
         return '<Promotion %r>' % self.name

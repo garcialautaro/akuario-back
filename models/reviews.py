@@ -45,8 +45,8 @@ class ReviewsModel(db.Model):
             abort(400, description="The 'product_uuid' does not correspond to a valid product.")
 
         # Verificar el rating
-        if 'rating' not in json_dict or type(json_dict['rating']) is not int or not (1 <= json_dict['rating'] <= 5):
-            abort(400, description="The 'rating' must be an integer between 1 and 5.")
+        if 'rating' not in json_dict or type(json_dict['rating']) is not int or not (1 <= json_dict['rating'] <= 10):
+            abort(400, description="The 'rating' must be an integer between 1 and 10.")
 
         # Verificar descripción
         if 'description' in json_dict and not json_dict['description'].strip():

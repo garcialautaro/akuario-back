@@ -2,6 +2,7 @@ from .accesses import AccessModel
 from .brands import BrandsModel
 from .categories import CategoriesModel
 from .clients import ClientModel
+from .employees import EmployeeModel
 from .order_statuses import OrderStatusesModel
 from .orders import OrderModel
 from .payment_methods import PaymentMethodsModel
@@ -9,7 +10,7 @@ from .photos import PhotosModel
 from .product_price_history import ProductPriceHistoryModel
 from .products import ProductsModel
 from .profiles import ProfileModel
+from .promotion_products import PromotionProductModel
 from .promotions import PromotionsModel
 from .reviews import ReviewsModel
 from .users import UserModel
-from .employees import EmployeeModel

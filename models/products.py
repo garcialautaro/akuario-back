@@ -19,7 +19,7 @@ class ProductsModel(db.Model):
     description = db.Column(db.String(255), nullable=True)
     price = db.Column(db.Float, nullable=False)
     stock = db.Column(db.Integer, nullable=False, default=0)
-    sales_number = db.Column(db.Integer, nullable=False, default=0)
+    sales_number = db.Column(db.Integer, nullable=True, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     deleted_at = db.Column(db.DateTime, nullable=True)
@@ -48,7 +48,7 @@ class ProductsModel(db.Model):
 
     @staticmethod
     def from_json(json_dict):
-            required_fields = ['brand_uuid', 'name', 'price', 'stock', 'sales_number']
+            required_fields = ['brand_uuid', 'name', 'price', 'stock']
             for field in required_fields:
                 if field not in json_dict or json_dict[field] is None:
                     abort(400, description=f"{field} is required and cannot be empty.")
@@ -61,8 +61,6 @@ class ProductsModel(db.Model):
 
             if json_dict.get('price', 0) < 0:
                 abort(400, description="price must be a non-negative number.")
-            if json_dict.get('sales_number', 0) < 0:
-                abort(400, description="sales_number must be a non-negative number.")
 
             return ProductsModel(
                 brand_uuid=json_dict['brand_uuid'],
@@ -70,6 +68,5 @@ class ProductsModel(db.Model):
                 description=json_dict.get('description', ''),
                 price=json_dict['price'],
                 stock=json_dict.get('stock', 0),
-                sales_number=json_dict['sales_number'],
                 code=json_dict.get('code', '')
             )

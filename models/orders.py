@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 from config.db_config import db
 from flask import abort
+from sqlalchemy import func
 
 # Tabla intermedia perfiles_accesos
 order_details = db.Table('order_details',
@@ -21,7 +22,7 @@ class OrderModel(db.Model):
     transaction_uuid = db.Column(db.String(36), nullable=True)
     payment_method_uuid = db.Column(db.String(36), db.ForeignKey('payment_methods.uuid'), nullable=False)
     purchase_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    total = db.Column(db.Float, nullable=False)
+    total = db.Column(db.Float, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     deleted_at = db.Column(db.DateTime, nullable=True)
@@ -67,18 +68,19 @@ class OrderModel(db.Model):
         except ValueError:
             abort(400, description="purchase_date must be a valid ISO date string.")
 
-        # Asegurar que el total sea un valor flotante válido
-        try:
-            total = float(json_dict['total'])
-        except ValueError:
-            abort(400, description="'total' must be a float.")
+        # Consultar el máximo valor actual de 'code' en las órdenes existentes y sumarle uno
+        max_code = db.session.query(func.max(OrderModel.code)).scalar()
+        if max_code is None:
+            # En caso de que no haya órdenes, empezamos desde 1
+            next_code = 1
+        else:
+            next_code = max_code + 1
 
         return OrderModel(
-            uuid=json_dict.get('uuid', str(uuid.uuid4())),
             client_uuid=json_dict['client_uuid'],
             status_uuid=json_dict['status_uuid'],
             transaction_uuid=json_dict.get('transaction_uuid', None),
             payment_method_uuid=json_dict.get('payment_method_uuid'),
             purchase_date=purchase_date,
-            total=total
+            code=next_code,
         )

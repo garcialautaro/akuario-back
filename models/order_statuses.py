@@ -31,14 +31,30 @@ class OrderStatusesModel(db.Model):
 
     @staticmethod
     def from_json(json_dict):
-
+        # Validación para 'name'
         if 'name' not in json_dict or not json_dict['name'].strip():
             abort(400, description="The 'name' field is required and cannot be empty.")
-            
+
+        # Validación para 'code'
+        if 'code' not in json_dict or not json_dict['code'].strip():
+            abort(400, description="The 'code' field is required and cannot be empty.")
+        if len(json_dict['code']) > 5:
+            abort(400, description="The 'code' field must be no longer than 5 characters.")
+
+        # Validación para 'color'
+        if 'color' not in json_dict or not json_dict['color'].strip():
+            abort(400, description="The 'color' field is required and cannot be empty.")
+        # Esta es una validación básica para un color hexadecimal
+        if not json_dict['color'].startswith('#') or len(json_dict['color']) not in [4, 7]:
+            abort(400, description="The 'color' field must be a valid hexadecimal color code.")
+
+        # Validación para 'description'
         if 'description' in json_dict and not json_dict['description'].strip():
             abort(400, description="The 'description' field cannot be an empty string if provided.")
-            
+        
         return OrderStatusesModel(
-            name=json_dict['name'],
-            description=json_dict['description']
+            name=json_dict['name'].strip(),
+            code=json_dict['code'].strip().upper(),  # Normalizar el código a mayúsculas
+            color=json_dict['color'].strip(),
+            description=json_dict.get('description', '').strip()
         )
